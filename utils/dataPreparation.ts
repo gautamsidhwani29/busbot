@@ -1,18 +1,4 @@
-import type { Depot, Stop, Vehicle } from "../types/types"
-
-export const depots: Depot[] = [
-  { id: 1, lat: 45.523, lng: -73.556, openTime: "06:00", closeTime: "22:00" },
-  { id: 2, lat: 45.531, lng: -73.562, openTime: "05:30", closeTime: "23:00" },
-]
-
-export const stops: Stop[] = [
-  { id: 101, amPeakDemand: 50, pmPeakDemand: 20, lat: 45.520, lng: -73.55, timeWindow: [25200, 32400], position: [45.520, -73.55] },
-  { id: 102, amPeakDemand: -30, pmPeakDemand: -10, lat: 45.525, lng: -73.56, timeWindow: [57600, 64800], position: [45.525, -73.56] }
-];
-export const vehicles: Vehicle[] = [
-  { id: "Bus1", depotId: 1, capacity: 50, shiftStart: "06:00", shiftEnd: "10:00" },
-  { id: "Bus2", depotId: 2, capacity: 50, shiftStart: "15:00", shiftEnd: "19:00" },
-]
+import type { Depot, BusStop, Vehicle } from "../types/types"
 
 export function timeToSeconds(time: string): number {
   const [hours, minutes] = time.split(":").map(Number)
@@ -25,17 +11,25 @@ export function secondsToTime(seconds: number): string {
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`
 }
 
-export function sliceTimeWindows(stops: Stop[]): { amPeak: Stop[]; pmPeak: Stop[] } {
-  const amPeak = stops.filter((stop) => stop.timeWindow[0] < 12 * 3600)
-  const pmPeak = stops.filter((stop) => stop.timeWindow[1] >= 12 * 3600)
+export function sliceTimeWindows(stops: BusStop[]): { amPeak: BusStop[]; pmPeak: BusStop[] } {
+  const amPeak = stops.filter((stop) => {
+    const startSeconds = timeToSeconds(stop.time_window_start)
+    return startSeconds < 12 * 3600 // Before 12:00
+  })
+
+  const pmPeak = stops.filter((stop) => {
+    const endSeconds = timeToSeconds(stop.time_window_end)
+    return endSeconds >= 12 * 3600 // After or at 12:00
+  })
+
   return { amPeak, pmPeak }
 }
 
-export function updateDepotLocations(depots: Depot[], lastStops: Stop[]): Depot[] {
+export function updateDepotLocations(depots: Depot[], lastStops: BusStop[]): Depot[] {
   return depots.map((depot, index) => ({
     ...depot,
-    lat: lastStops[index] ? lastStops[index].lat : depot.lat,
-    lng: lastStops[index] ? lastStops[index].lng : depot.lng,
+    latitude: lastStops[index] ? lastStops[index].latitude : depot.latitude,
+    longitude: lastStops[index] ? lastStops[index].longitude : depot.longitude,
   }))
 }
 

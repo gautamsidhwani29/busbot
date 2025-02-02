@@ -5,18 +5,18 @@ FROM debian:latest
 WORKDIR /app
 
 # Install required dependencies
-RUN apt-get update && apt-get install -y build-essential wget
+RUN apt-get update && apt-get install -y build-essential wget gcc g++ make
 
 # Copy the LKH-3 solver source files
-COPY ../LKH /app/LKH
-COPY ../SRC /app/SRC
-COPY ../Makefile /app/
+COPY LKH /app/LKH
+COPY SRC /app/SRC
+COPY Makefile /app/
 
-# Compile LKH-3
-RUN make
+# Ensure LTO is disabled (or recompile with proper flags)
+RUN make CFLAGS="-O2 -fno-lto"
 
 # Copy microservice files
-COPY . /app/
+COPY lkh-microservice /app/lkh-microservice
 
 # Expose the port the microservice runs on
 EXPOSE 5000

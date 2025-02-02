@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delhi Bus Route Optimization</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <style>
+        #map {
+            height: 90vh;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <h2 style="text-align: center;">Optimized Bus Route Map</h2>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+    <script>
+        let map = L.map('map').setView([28.6139, 77.2090], 12);
+
+        // Add OpenStreetMap Layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Define two separate bus routes
+        let route1 = [
+            { name: "Stop A", lat: 28.6448, lon: 77.2167 },
+            { name: "Stop B", lat: 28.7041, lon: 77.1025 },
+            { name: "Stop C", lat: 28.5355, lon: 77.3910 }
+        ];
+
+        let route2 = [
+            { name: "Stop X", lat: 28.4595, lon: 77.0266 },
+            { name: "Stop Y", lat: 28.6139, lon: 77.2090 },
+            { name: "Stop Z", lat: 28.7041, lon: 77.3025 }
+        ];
+
+        function createRoute(route, color) {
+            let waypoints = route.map(stop => {
+                L.marker([stop.lat, stop.lon]).addTo(map).bindPopup(stop.name);
+                return L.latLng(stop.lat, stop.lon);
+            });
+
+            L.Routing.control({
+                waypoints: waypoints,
+                routeWhileDragging: true,
+                lineOptions: {
+                    styles: [{ color: color, weight: 6 }]
+                },
+                serviceUrl: 'https://router.project-osrm.org/route/v1'
+            }).addTo(map);
+        }
+
+        // Create two separate routes
+        createRoute(route1, 'blue');
+        createRoute(route2, 'red');
+
+    </script>
+
+</body>
+</html>
